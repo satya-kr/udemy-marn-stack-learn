@@ -4,7 +4,8 @@ const {
     getAlltours, 
     createNewTour, 
     getTourById, 
-    updateTourById 
+    updateTourById,
+    deleteTour
 } = require('../controllers/tour.controller');
 
 
@@ -20,6 +21,7 @@ router.post('/', createNewTour);
 // router.get('/api/v1/tours/:id/:status?', (req, res) => { //:status? is optional
 router.get('/:id', getTourById);
 router.patch('/:id', updateTourById);
+router.delete('/:id', deleteTour);
 
 
 module.exports = router

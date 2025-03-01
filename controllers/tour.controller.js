@@ -59,6 +59,7 @@ const getTourById = async (req, res) => {
     // console.log(req.params);
     const { id } = req.params;
     const tour = await Tour.findById(id);
+    // or Tour.findOne({ _id: id})
     try {
         res.status(200).json({
             status: 'SUCCESS',
@@ -93,27 +94,71 @@ const getTourById = async (req, res) => {
     // })
 };
 
-const updateTourById = (req, res) => {
+const updateTourById = async (req, res) => {
     const { id } = req.params;
-    const tour = tours.find((item) => item.id === parseInt(id));
 
-    if (parseInt(id) > tours.length || !tour) {
-        res.status(404).json({
-            status: 'FAIL',
-            message: "Invalid id"
+    try {
+
+        const tour = await Tour.findByIdAndUpdate(id, req.body, {
+            new : true, // its return the new updated document ,
+            runValidators: true, // it will run the model validations again
+        });
+
+        res.status(200).json({
+            status: 'SUCCESS',
+            message: "updated",
+            data: {
+                tour: tour
+            }
         })
-        return
+    } catch(err) {
+        res.status(400).json({
+            status: 'FAIL',
+            message: "Failed to update >>>"+ err
+        })
     }
 
-    res.status(200).json({
-        status: 'SUCCESS',
-        message: "updated"
-    })
+    // const tour = tours.find((item) => item.id === parseInt(id));
+
+    // if (parseInt(id) > tours.length || !tour) {
+    //     res.status(404).json({
+    //         status: 'FAIL',
+    //         message: "Invalid id"
+    //     })
+    //     return
+    // }
+
+    // res.status(200).json({
+    //     status: 'SUCCESS',
+    //     message: "updated"
+    // })
 };
+
+const deleteTour = async (req, res) => {
+
+    try {
+        const {id} = req.params;
+    
+        await Tour.findByIdAndDelete(id);
+
+        res.status(200).json({
+            status: 'SUCCESS',
+            message: "deleted",
+        })
+
+    } catch(err) {
+        res.status(400).json({
+            status: 'FAIL',
+            message: "Failed to delete >>> "+ err
+        })
+    }
+
+}
 
 module.exports = {
     getAlltours,
     getTourById,
     createNewTour,
-    updateTourById
+    updateTourById,
+    deleteTour
 }
