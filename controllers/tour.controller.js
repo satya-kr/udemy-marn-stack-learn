@@ -1,21 +1,91 @@
-const fs = require('fs')
+// const fs = require('fs')
 const Tour = require('../models/tour.model');
+const APIFeatures = require('../utils/apiFeatures');
 
-const tourFilePath = `${__dirname}/../dev-data/data/tours-simple.json`;
-const tours = JSON.parse(fs.readFileSync(tourFilePath));
+// const tourFilePath = `${__dirname}/../dev-data/data/tours-simple.json`;
+// const tours = JSON.parse(fs.readFileSync(tourFilePath));
+
 
 
 const getAlltours = async (req, res) => {
 
-    const toursList = await Tour.find({})
+    try {
+        // const {
+        //     difficulty, duration
+        // } = req.query;
+        // const toursList = await Tour.find()
+        // .where('duration').equals(duration)
+        // .where('difficulty').equals(difficulty.toString())
 
-    res.status(200).json({
-        status: 'SUCCESS',
-        result: toursList.length,
-        data: {
-            tours: toursList
-        }
-    })
+
+
+        // const queryObj = {...req.query}
+        // const excludedFields = ['page', 'sort', 'limit', 'fields']
+        // excludedFields.forEach(el => delete queryObj[el])
+
+        // let queryStr = JSON.stringify(queryObj);
+        // queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, match => `$${match}`);
+        
+        // // console.log(req.query, queryObj, JSON.parse(queryStr));
+
+        // let query = Tour.find(JSON.parse(queryStr))
+
+        // // sorting
+        // if(req.query.sort) {
+        //     const sortQuery = req.query.sort.split(',').join(' ')
+        //     query = query.sort(sortQuery)
+        // } else {
+        //     query = query.sort('_id')
+        // }
+
+        // // fields limiting
+        // if(req.query.fields) {
+        //     const fields = req.query.fields.split(',').join(' ');
+        //     // query = query.select('name duration price');
+        //     query = query.select(fields)
+        // } else {
+        //     query = query.select('-__v')
+        // }
+
+        // pagination
+        // query = query.skip(2).limit(5);
+        // const page = req.query.page * 1 || 1;
+        // const limit = req.query.limit * 1 || 100;
+        // const skip = (page - 1) * limit;
+        // query = query.skip(skip).limit(limit);
+
+
+        // const totalDocs = await Tour.countDocuments() // Count total documents
+        // // const totalPages = Math.ceil(totalDocs / limit)
+        // if (skip >= totalDocs) {
+        //     throw new Error("This page does not exist") // Skip exceeds the total documents, page is out of range
+        // }
+
+        // const toursList = await query;
+        const features = new APIFeatures(Tour.find(), req.query)
+            .filter()
+            .sorting()
+            .limitFields()
+            .paginate();
+
+        const toursList = await features.query;
+
+        // console.log(toursList)
+
+        res.status(200).json({
+            status: 'SUCCESS',
+            result: toursList.length,
+            data: {
+                tours: toursList
+            }
+        })
+    } catch(err) {
+        // console.log(err.message)
+        res.status(404).json({
+            status: "FAIL",
+            message: err.stack
+        })
+    }
 };
 
 const createNewTour = async (req, res) => {
@@ -155,10 +225,76 @@ const deleteTour = async (req, res) => {
 
 }
 
+const getTourStats = async (req, res) => {
+    try {
+
+        const allStats = await Tour.aggregate([
+            {
+                $match: { ratingsAverage: { $gte: 4.5 } }
+            },
+            {
+                $group: {
+                    _id: null,
+                    numTours: { $sum: 1 },
+                    numRatings: { $sum: '$ratingsQuantity' },
+                    avgRating: { $avg: '$ratingsAverage' },
+                    avgPrice: { $avg: '$price' },
+                    minPrice: { $min: '$price' },
+                    maxPrice: { $max: '$price' },
+                }
+            }
+        ]);
+
+        const difficultyStats = await Tour.aggregate([
+            {
+                $match: { ratingsAverage: { $gte: 4.5 } }
+            },
+            {
+                $group: {
+                    _id: { $toUpper: '$difficulty'},
+                    // _id: '$difficulty',
+                    numTours: { $sum: 1 },
+                    numRatings: { $sum: '$ratingsQuantity' },
+                    avgRating: { $avg: '$ratingsAverage' },
+                    avgPrice: { $avg: '$price' },
+                    minPrice: { $min: '$price' },
+                    maxPrice: { $max: '$price' },
+                }
+            },
+            {
+                $sort: { avgPrice: 1 }
+            }
+        ]);
+
+
+        if (!allStats || allStats.length === 0) {
+            return res.status(404).json({
+                status: 'FAIL',
+                message: 'No stats found for the given criteria.'
+            });
+        }
+        
+        res.status(200).json({
+            status: 'SUCCESS',
+            data: {
+                stats: allStats[0],
+                difficultyStats: difficultyStats
+            }
+        })
+
+    } catch(err) {
+        res.status(400).json({
+            status: 'FAIL',
+            message: err.message
+        })
+    }
+}
+
 module.exports = {
     getAlltours,
     getTourById,
     createNewTour,
     updateTourById,
-    deleteTour
+    deleteTour,
+    getTourStats
 }

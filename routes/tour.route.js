@@ -5,7 +5,8 @@ const {
     createNewTour, 
     getTourById, 
     updateTourById,
-    deleteTour
+    deleteTour,
+    getTourStats
 } = require('../controllers/tour.controller');
 
 
@@ -17,6 +18,7 @@ const {
 const router = express.Router();
 
 router.get('/', getAlltours);
+router.get('/stats', getTourStats);
 router.post('/', createNewTour);
 // router.get('/api/v1/tours/:id/:status?', (req, res) => { //:status? is optional
 router.get('/:id', getTourById);
