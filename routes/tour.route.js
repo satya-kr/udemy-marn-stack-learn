@@ -11,11 +11,6 @@ const {
 } = require('../controllers/tour.controller');
 
 
-
-
-
-
-
 const router = express.Router();
 
 router.get('/', getAlltours);
