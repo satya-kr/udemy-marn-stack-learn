@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const slugify = require('slugify')
-const validator = require('validator');
+// const validator = require('validator');
 
 const tourSchema = new mongoose.Schema({
   name: {
@@ -9,7 +9,7 @@ const tourSchema = new mongoose.Schema({
     unique: true,
     trim: true,
     maxlength: [200, 'max title limit is 200'],
-    validate: [validator.isAlpha, 'tour onlu contains chars']
+    // validate: [validator.isAlpha, 'tour only contains chars']
   },
   duration: {
     type: Number,

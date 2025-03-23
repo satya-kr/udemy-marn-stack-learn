@@ -31,7 +31,6 @@ app.all('*', (req, res, next) => {
     next(new AppError(`Can't find ${req.originalUrl} on the server`, 404))
 })
 
-
 //  global error handler middleware
 app.use(globalErrorHandler)
 
