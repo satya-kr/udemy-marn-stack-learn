@@ -9,6 +9,7 @@ const {
     getTourStats,
     getMonthlyPlan
 } = require('../controllers/tour.controller');
+const { role } = require('../middlewares/role.middleware');
 
 
 const router = express.Router();
@@ -20,7 +21,7 @@ router.post('/', createNewTour);
 // router.get('/api/v1/tours/:id/:status?', (req, res) => { //:status? is optional
 router.get('/:id', getTourById);
 router.patch('/:id', updateTourById);
-router.delete('/:id', deleteTour);
+router.delete('/:id', role('admin', 'lead-guide'), deleteTour);
 
 
 module.exports = router

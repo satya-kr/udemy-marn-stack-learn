@@ -4,6 +4,9 @@ const AppError = require("../utils/appError");
 const catchAsync = require("../utils/catchAsync");
 
 const getAlltours = catchAsync(async (req, res, next) => {
+
+  // console.log(req.user);
+
   const features = new APIFeatures(Tour.find(), req.query)
     .filter()
     .sorting()
@@ -73,6 +76,7 @@ const updateTourById = catchAsync(async (req, res, next) => {
 
 const deleteTour = catchAsync(async (req, res, next) => {
   const { id } = req.params;
+  // console.log(req.user);
 
   const tour = await Tour.findByIdAndDelete(id);
 
